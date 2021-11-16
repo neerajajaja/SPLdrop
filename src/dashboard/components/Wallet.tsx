@@ -85,7 +85,7 @@ export default function Connect(props : any) {
 
 <div className="lg:flex lg:items-center lg:justify-between  p-2 ">
       <div className="flex-1 min-w-0">
-      <img src="sikkaLogo.svg" className ="bg-indigo-800 w-10 h-10 ml-20 rounded-full"  />
+      <img src="spldrop.png" className ="bg-indigo-800 w-30 h-8 ml-5"  />
  
       </div>
       <div className="mt-5 flex lg:mt-0 lg:ml-4">

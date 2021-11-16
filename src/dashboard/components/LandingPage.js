@@ -3,6 +3,7 @@ import { useState, Fragment } from 'react';
 import TabControls from './TabControls';
 import TokenCreator from './token.jsx';
 import AirdropPage from './AirdropPage.js';
+import Footer from "./footer";
 import "../CSS/LandingPage.scss"
 
 function LandingPage(props) {
@@ -47,7 +48,9 @@ function LandingPage(props) {
         return tabNode;
     }
     return (
+
         <Fragment>
+        <div className="py-20 bg-gradient-to-br from-indigo-100 to-indigo-400 flex justify-center items-center h-screen">
         <div className = 'main-container bg-white font-sans shadow-lg rounded-lg p-8'>
             <TabControls
                 menuItems={COIN_TYPE_TABS}
@@ -62,7 +65,10 @@ function LandingPage(props) {
                 </div>
             </div>
          </div>
+         </div>
+         <Footer />
         </Fragment>
+        
     )
 }
 
