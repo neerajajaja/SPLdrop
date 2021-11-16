@@ -1,0 +1,62 @@
+body {
+    margin : 0;
+    font-family: 'Inter', sans-serif;
+}
+input {
+    margin-bottom: 10px;
+    border-radius:10px;
+    border-style:solid;
+    border-width: 1.2px;
+    outline : none;
+}
+
+#create-token {
+}
+.decimals {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 4px 12px;
+    position: static;
+    width: 400px;
+    height: 48px;
+    background: #30343E;
+    box-shadow: 0px 0px 8px rgba(54, 65, 114, 0.1);
+    border-radius: 6px;
+    color: white;
+}
+.decimals-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 14px 24px;
+    width: 167px;
+    height: 48px;
+    background: #195FEA;
+    border-radius: 8px;
+    color: white;
+    border: none;
+}
+.initialization-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 14px 24px;
+    width: 286px;
+    height: 48px;
+    background: #195FEA;
+    border-radius: 8px;
+    color: white;
+    font-size: 18px;
+    border: none;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+}

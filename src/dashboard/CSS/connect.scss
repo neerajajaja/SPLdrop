@@ -1,0 +1,31 @@
+#navbar {
+    height: 70px;
+    padding: 10px;
+    position: relative;
+}
+#navbar h2 {
+    margin : 0;
+}
+.sikkaHeader {
+    display: flex;
+    margin-top: 10px;
+    justify-self: center;
+    align-self: center;
+    .headerImage {
+        margin: auto 10px auto 124px;
+    }
+    .header{
+        font-size: large;
+        display: flex;
+        align-self: center;
+    }
+}
+.connect-button{
+    position: absolute;
+   top : 10px; 
+   right : 20px;
+    padding:10px;
+    cursor: pointer;
+    background-color: #082032;
+    border-radius: 20px;
+}

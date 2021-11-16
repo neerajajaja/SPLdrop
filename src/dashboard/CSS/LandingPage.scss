@@ -1,0 +1,40 @@
+.main-container {
+  height: calc(100vh - 85px);
+  align-self: center;
+}
+
+  .main-container {
+    display: flex;
+    flex-direction: column;
+    width: 448px;
+    height: max-content;
+    justify-self: center;
+    align-self: center;
+    margin-top: 64px;
+  }
+  
+.searchResultMenu{
+    top: -1px;
+    z-index: 4;
+}
+.tabContainer {
+    width: 100%;
+    height: 100%;
+    .tabs {
+      width: 100%;
+      height: 100%;
+      margin: 0 auto;
+      max-width: 844px;
+      display: flex;
+      // align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      letter-spacing: -0.5px;
+      margin-top: 20px;
+        // @include if-device(tablet) {
+        //     padding: 12px 32px;
+        //     padding-bottom: 0;
+        // }
+    }
+}
+
