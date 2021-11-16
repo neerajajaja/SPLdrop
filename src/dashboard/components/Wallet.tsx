@@ -45,7 +45,6 @@ const getProvider = () => {
       return provider;
     }
   }
-  window.open("https://phantom.app/", "_blank");
 };
 
 
