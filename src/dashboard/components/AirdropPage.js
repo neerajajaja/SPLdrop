@@ -58,7 +58,8 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
     const provider = getProvider();
   
     async function airdrop(TokenMintAddress) {
-      const transactions = [];
+      try {
+        const transactions = [];
 
       const sourceAddress = await findAssociatedTokenAddress(
         new PublicKey(provider.publicKey.toString()),
@@ -111,11 +112,20 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         [],
         wallet
       );
+
+      alert("Congratulations your token has been successfully airdropped!");
             
+      
+       } catch (error) {
+         console.log(error);
+         alert("Error. Click Upload before Airdrop.");
+       }
+      
     }
 
     async function transfer(TokenMintAddress) {
-      const transactions = [];
+      try {
+        const transactions = [];
 
       const sourceAddress = await findAssociatedTokenAddress(
         new PublicKey(provider.publicKey.toString()),
@@ -159,7 +169,14 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         [],
         wallet
       );
+
+      alert("Congratulations your token has been successfully transferred!");
             
+      
+       } catch (error) {
+         console.log(error);
+         alert("Error. Click Upload before Transfer");
+       }            
     }
 
     const processCSV = (str, delim=',') => {
@@ -194,6 +211,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         }
 
         reader.readAsText(file);
+        alert("File uploaded. You can Transfer or Airdrop tokens now!");
     }
   
     return (
@@ -210,6 +228,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         >
         </input>
         <br/>
+        <p className="text-black font-sans text-xs">*Go through Docs for more details on file format and specifications</p><br/>
         <button className = "p-2 mb-30 rounded-md shadow-lg bg-gray-300 mt-5 hover:shadow-xl duration-300 hover:bg-gray-400"
                 onClick={(e) => {
                     e.preventDefault()
@@ -228,7 +247,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
           onClick={(e) => {
             airdrop(
               document.getElementById("TokenMintAddress").value
-            )
+            );
           }
           }
         >
@@ -243,7 +262,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
           onClick={(e) => {
             transfer(
               document.getElementById("TokenMintAddress").value
-            )
+            );
           }
           }
         >

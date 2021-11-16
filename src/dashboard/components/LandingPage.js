@@ -15,12 +15,12 @@ function LandingPage(props) {
       }
        const COIN_TYPE_TABS = [
         {
-          label: 'Create Coins',
+          label: 'Create Tokens',
           key: 'social',
           value: 0,
         },
         {
-          label: 'Transfer Coins',
+          label: 'Airdrop Tokens',
           key: 'airdrop',
           value: 1,
         }
