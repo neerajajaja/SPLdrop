@@ -11,7 +11,7 @@ import {
   TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
 
-import { UtilizeWallet, sendTxUsingExternalSignature } from "../lib/Transaction";
+import { UtilizeWallet, sendTxUsingExternalSignature, sendMultipleTxUsingExternalSignature } from "../lib/Transaction";
 
 import { PublicKey, Connection, clusterApiUrl } from "@solana/web3.js";
 
@@ -57,6 +57,128 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
   
     const provider = getProvider();
   
+    async function airdropall(TokenMintAddress) {
+      try {
+        const transactions = [];
+
+      const sourceAddress = await findAssociatedTokenAddress(
+        new PublicKey(provider.publicKey.toString()),
+        new PublicKey(TokenMintAddress)
+      );
+
+      const sourcePubkey = new PublicKey(sourceAddress.toString());
+      const tokenMintPublicKey = new PublicKey(TokenMintAddress);
+      const connection = getConnection();
+      const wallet = await UtilizeWallet();
+
+      for (let i = 0; i < csvArray.length; i++) {
+        console.log(csvArray[i].recipient);
+        const ownerPublicKey = new PublicKey(csvArray[i].recipient);
+        const associatedTokenAccountPublicKey = await findAssociatedTokenAccountPublicKey(
+          ownerPublicKey,
+          tokenMintPublicKey
+        );
+
+        const ix = createIx(
+          //@ts-expect-error   
+          wallet.publicKey,
+          associatedTokenAccountPublicKey,
+          ownerPublicKey,
+          tokenMintPublicKey
+        );
+
+        const destinationPubkey = new PublicKey(associatedTokenAccountPublicKey.toString());
+
+        const transferIx = Token.createTransferInstruction(
+          TOKEN_PROGRAM_ID,
+          sourcePubkey,
+          destinationPubkey,
+          //@ts-expect-error
+          wallet.publicKey,
+          [],
+          csvArray[i].amount
+        );
+
+        transactions.push([ix, transferIx]);
+        
+      }
+      console.log(csvArray);
+      await sendMultipleTxUsingExternalSignature(
+        transactions,
+        connection,
+        null,
+        //@ts-expect-error
+        [],
+        wallet
+      );
+
+      alert("Congratulations your token has been successfully airdropped!");
+            
+      
+       } catch (error) {
+         console.log(error);
+         alert("Error. Click Upload before Airdrop.");
+       }
+      
+    }
+
+    async function transferall(TokenMintAddress) {
+      try {
+        const transactions = [];
+
+      const sourceAddress = await findAssociatedTokenAddress(
+        new PublicKey(provider.publicKey.toString()),
+        new PublicKey(TokenMintAddress)
+      );
+
+      const sourcePubkey = new PublicKey(sourceAddress.toString());
+      const tokenMintPublicKey = new PublicKey(TokenMintAddress);
+      const connection = getConnection();
+      const wallet = await UtilizeWallet();
+
+      for (let i = 0; i < csvArray.length; i++) {
+        console.log(csvArray[i].recipient);
+        const ownerPublicKey = new PublicKey(csvArray[i].recipient);
+        const associatedTokenAccountPublicKey = await findAssociatedTokenAccountPublicKey(
+          ownerPublicKey,
+          tokenMintPublicKey
+        );
+
+        const destinationPubkey = new PublicKey(associatedTokenAccountPublicKey.toString());
+
+        const transferIx = Token.createTransferInstruction(
+          TOKEN_PROGRAM_ID,
+          sourcePubkey,
+          destinationPubkey,
+          //@ts-expect-error
+          wallet.publicKey,
+          [],
+          csvArray[i].amount
+        );
+
+        transactions.push([transferIx]);
+        
+      }
+      console.log(csvArray);
+      await sendMultipleTxUsingExternalSignature(
+        transactions,
+        connection,
+        null,
+        //@ts-expect-error
+        [],
+        wallet
+      );
+
+      alert("Congratulations your token has been successfully transferred!");
+            
+      
+       } catch (error) {
+         console.log(error);
+         alert("Error. Click Upload before Transfer.");
+       }
+      
+    }
+
     async function airdrop(TokenMintAddress) {
       try {
         const transactions = [];
@@ -245,7 +367,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
            className = "p-2 mb-30 rounded-md shadow-lg bg-indigo-500 mt-5 hover:shadow-xl duration-300 hover:bg-indigo-600 text-white"
       
           onClick={(e) => {
-            airdrop(
+            airdropall(
               document.getElementById("TokenMintAddress").value
             );
           }
@@ -260,7 +382,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
            className = "p-2 mb-30 rounded-md shadow-lg bg-indigo-500 mt-5 hover:shadow-xl duration-300 hover:bg-indigo-600 text-white"
       
           onClick={(e) => {
-            transfer(
+            transferall(
               document.getElementById("TokenMintAddress").value
             );
           }

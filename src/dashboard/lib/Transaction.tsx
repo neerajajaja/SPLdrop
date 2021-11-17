@@ -7,7 +7,6 @@ import {
   TransactionInstruction
 } from "@solana/web3.js";
 
-
 import Wallet from "@project-serum/sol-wallet-adapter";
 
 type DisplayEncoding = "utf8" | "hex";
@@ -55,7 +54,6 @@ const wallet = getProvider()
 const NETWORK = clusterApiUrl("devnet");
 
   export const sendTxUsingExternalSignature = async (
-  
     instructions: TransactionInstruction[],
     connection: Connection,
     feePayer: Account | null,
@@ -84,6 +82,69 @@ const NETWORK = clusterApiUrl("devnet");
     });
     return connection.confirmTransaction(txid, "singleGossip");
   };
+
+  const createTransferTransaction = async (
+    instructions: TransactionInstruction[], 
+    connection: Connection,
+    wallet: Wallet) => {
+
+    let tx = new Transaction().add(
+      ...instructions
+    );
+    //@ts-expect-error
+    tx.feePayer = wallet.publicKey;
+    
+    const anyTransaction: any = tx;
+    anyTransaction.recentBlockhash = (
+      await connection.getRecentBlockhash()
+    ).blockhash;
+    return tx;
+  };
+
+  export const sendMultipleTxUsingExternalSignature = async (
+    instructions: TransactionInstruction[][],
+    connection: Connection,
+    feePayer: Account | null,
+    signersExceptWallet: Account[],
+    wallet: Wallet
+  ) => {
+
+    const transactions=[];
+
+    for (let i = 0; i < instructions.length; i++) {
+      const transaction=await createTransferTransaction(instructions[i],connection,wallet);
+      //@ts-expect-error
+      transactions.push(transaction);
+    }
+
+    let signed = await wallet.signAllTransactions(transactions);
+    return await sendAllSignedTransactions(connection, signed);
+    //let txid = await connection.sendRawTransaction(signed.serialize());
+    //return connection.confirmTransaction(txid, "singleGossip");
+  };
+
+  export async function sendAllSignedTransactions(connection: Connection, signedTransactions:Transaction[]) {
+    const transactions = [];
+
+    for (let signedTransaction of signedTransactions) {
+        console.log("signed transaction starting", signedTransaction);
+        const rawTransaction = signedTransaction.serialize();
+        const txId = await connection.sendRawTransaction(rawTransaction, {
+            skipPreflight: true,
+            preflightCommitment: "confirmed",
+        });
+
+        console.log("Sending transaction ID:", txId);
+
+        //@ts-expect-error
+        transactions.push(txId);
+        const confirm = await connection.confirmTransaction(txId, "singleGossip");
+        console.log(confirm);
+
+    }
+
+    return transactions;
+}
   
   const connectToWallet = () => {
     if (wallet) {

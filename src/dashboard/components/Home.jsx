@@ -10,8 +10,6 @@ export default function Home() {
   return (
       <>
 {/* Use Cases  */}
-
-    
     <div className="py-12 bg-gradient-to-br from-indigo-100 to-indigo-400 flex justify-center items-center h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center items-center">
         <div className="lg:text-center">
