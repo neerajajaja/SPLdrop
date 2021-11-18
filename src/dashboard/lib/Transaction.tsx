@@ -102,6 +102,7 @@ const NETWORK = clusterApiUrl("devnet");
   };
 
   export const sendMultipleTxUsingExternalSignature = async (
+    csvInfo,
     instructions: TransactionInstruction[][],
     connection: Connection,
     feePayer: Account | null,
@@ -118,15 +119,22 @@ const NETWORK = clusterApiUrl("devnet");
     }
 
     let signed = await wallet.signAllTransactions(transactions);
-    return await sendAllSignedTransactions(connection, signed);
+    const transactionResult = await sendAllSignedTransactions(csvInfo, connection, signed);
+    return transactionResult;
     //let txid = await connection.sendRawTransaction(signed.serialize());
     //return connection.confirmTransaction(txid, "singleGossip");
   };
 
-  export async function sendAllSignedTransactions(connection: Connection, signedTransactions:Transaction[]) {
-    const transactions = [];
+  export async function sendAllSignedTransactions(csvInfo, connection: Connection, signedTransactions:Transaction[]) {
+    var transactions = [];
+    var csvResults = [];
 
-    for (let signedTransaction of signedTransactions) {
+    //@ts-expect-error
+    csvResults.push(["Recipient Address", "Amount", "Transaction Status", "View Transaction"])
+
+    for (let i=0; i<signedTransactions.length; i++) {
+      try{
+        let signedTransaction=signedTransactions[i];
         console.log("signed transaction starting", signedTransaction);
         const rawTransaction = signedTransaction.serialize();
         const txId = await connection.sendRawTransaction(rawTransaction, {
@@ -140,10 +148,27 @@ const NETWORK = clusterApiUrl("devnet");
         transactions.push(txId);
         const confirm = await connection.confirmTransaction(txId, "singleGossip");
         console.log(confirm);
+        
+        if(!confirm.value.err){
+          //@ts-expect-error;
+        csvResults.push([csvInfo[i][0], csvInfo[i][1].replace(/(\r\n|\n|\r)/gm, ""), "Successful", "https://explorer.solana.com/tx/"+txId+"?cluster=devnet"]);
+        }
+        else{
+          //@ts-expect-error;
+        csvResults.push([csvInfo[i][0], csvInfo[i][1].replace(/(\r\n|\n|\r)/gm, ""), "Failed", "https://explorer.solana.com/tx/"+txId+"?cluster=devnet"]);
+
+        }
+        
+      }catch (error) {
+        console.log(error);
+        //@ts-expect-error
+        csvResults.push([csvInfo[i][0], csvInfo[i][1].replace(/(\r\n|\n|\r)/gm, ""), "Failed", " "]);
+      }
+        
 
     }
 
-    return transactions;
+    return csvResults;
 }
   
   const connectToWallet = () => {

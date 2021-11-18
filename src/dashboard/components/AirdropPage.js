@@ -71,6 +71,8 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
       const connection = getConnection();
       const wallet = await UtilizeWallet();
 
+      const csvInfo = [];
+
       for (let i = 0; i < csvArray.length; i++) {
         console.log(csvArray[i].recipient);
         const ownerPublicKey = new PublicKey(csvArray[i].recipient);
@@ -99,11 +101,13 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
           csvArray[i].amount
         );
 
+        csvInfo.push([csvArray[i].recipient,csvArray[i].amount])
         transactions.push([ix, transferIx]);
         
       }
       console.log(csvArray);
-      await sendMultipleTxUsingExternalSignature(
+      const transactioncsv = await sendMultipleTxUsingExternalSignature(
+        csvInfo,
         transactions,
         connection,
         null,
@@ -111,16 +115,50 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         [],
         wallet
       );
-
-      alert("Congratulations your token has been successfully airdropped!");
-            
+      alert("Token airdrop is over. You can now view the Airdrop summary.");
       
+      console.log(transactioncsv);
+
+      var csvFile = '';
+      for (var i = 0; i < transactioncsv.length; i++) {
+          csvFile += processRow(transactioncsv[i]);
+      }
+
+      console.log(csvFile);
+
+      var pom = document.createElement('a');
+      var blob = new Blob([csvFile],{type: 'text/csv;charset=utf-8;'});
+      var url = URL.createObjectURL(blob);
+      pom.href = url;
+      pom.setAttribute('download', 'TransferSummary.csv');
+      pom.click();
+
        } catch (error) {
          console.log(error);
-         alert("Error. Click Upload before Airdrop.");
+         if(csvArray.length==0){
+          alert("Error. Enter Token Mint Address and .csv file. Click on Upload before Airdropping. Refer to Docs if error persists.");
+         };
        }
       
     }
+
+    var processRow = function (row) {
+      var finalVal = '';
+      for (var j = 0; j < row.length; j++) {
+          var innerValue = row[j] === null ? '' : row[j].toString();
+          if (row[j] instanceof Date) {
+              innerValue = row[j].toLocaleString();
+          };
+          var result = innerValue.replace(/"/g, '""');
+          if (result.search(/("|,|\n)/g) >= 0)
+              result = '"' + result + '"';
+          if (j > 0)
+              finalVal += ',';
+          finalVal += result;
+      }
+      return finalVal + '\n';
+  };
+
 
     async function transferall(TokenMintAddress) {
       try {
@@ -135,6 +173,8 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
       const tokenMintPublicKey = new PublicKey(TokenMintAddress);
       const connection = getConnection();
       const wallet = await UtilizeWallet();
+
+      const csvInfo = [];
 
       for (let i = 0; i < csvArray.length; i++) {
         console.log(csvArray[i].recipient);
@@ -156,11 +196,13 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
           csvArray[i].amount
         );
 
+        csvInfo.push([csvArray[i].recipient,csvArray[i].amount])
         transactions.push([transferIx]);
         
       }
       console.log(csvArray);
-      await sendMultipleTxUsingExternalSignature(
+      const transactioncsv = await sendMultipleTxUsingExternalSignature(
+        csvInfo,
         transactions,
         connection,
         null,
@@ -168,14 +210,31 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         [],
         wallet
       );
-
-      alert("Congratulations your token has been successfully transferred!");
-            
+      alert("Token transfer is over. You can now view the Transfer summary.");
       
+      console.log(transactioncsv);
+
+      var csvFile = '';
+      for (var i = 0; i < transactioncsv.length; i++) {
+          csvFile += processRow(transactioncsv[i]);
+      }
+
+      console.log(csvFile);
+
+      var pom = document.createElement('a');
+      var blob = new Blob([csvFile],{type: 'text/csv;charset=utf-8;'});
+      var url = URL.createObjectURL(blob);
+      pom.href = url;
+      pom.setAttribute('download', 'TransferSummary.csv');
+      pom.click();
+
        } catch (error) {
          console.log(error);
-         alert("Error. Click Upload before Transfer.");
+         if(csvArray.length==0){
+          alert("Error. Enter Token Mint Address and .csv file. Click on Upload before Transfering. Refer to Docs if error persists.");
+         };
        }
+      
       
     }
 
@@ -239,9 +298,11 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
             
       
        } catch (error) {
-         console.log(error);
-         alert("Error. Click Upload before Airdrop.");
-       }
+        console.log(error);
+        if(csvArray.length==0){
+         alert("Error. Enter Token Mint Address and .csv file. Click on Upload before Airdropping.");
+        };
+      }
       
     }
 
