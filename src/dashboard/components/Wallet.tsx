@@ -107,9 +107,9 @@ export default function Connect(props : any) {
         <span className="hidden sm:block">
           <button
            
-            className="inline-flex items-center px-4 py-2 duration-200 hover:text-black rounded-md shadow-sm hover:shadow-md text-sm font-medium text-gray-700 bg-white "
+            className="inline-flex items-center px-4 py-2 duration-200 hover:text-black rounded-md shadow-sm hover:shadow-md text-sm font-medium text-gray-700 bg-white " onClick={ ()=>window.open("https://j-neeraja.gitbook.io/spldrop/")}
           >
-             <Link to="/docs" type="button">Docs</Link>
+             Docs
           </button>
         </span>
 

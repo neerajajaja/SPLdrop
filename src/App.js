@@ -22,10 +22,6 @@ return (
  <Route exact path='/app'>
       <LandingPage  setToken=  {setToken} provider = {provider}/>
    </Route>
-   <Route path='/docs' component={() => { 
-     window.location.href = 'https://j-neeraja.gitbook.io/spldrop/'; 
-     return null;
-}}/>
  </Router>
    </>
   );
