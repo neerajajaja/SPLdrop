@@ -28,7 +28,7 @@ const TokenSteps = ({
                         </> 
             case 3:  
                 return <>
-                <p className="text-black font-sans"> Congratulations your token has been successfully created! </p>
+                <p className="text-black font-sans"> Congratulations your token has been successfully created! </p><br/>
                 <button variant="contained" color="primary"  className = "p-2 mb-30 rounded-md shadow-lg bg-indigo-500 hover:shadow-xl duration-300 hover:bg-indigo-600 text-white" onClick={ onClick } > View Token </button>
                   </>
 

@@ -8,6 +8,7 @@ import "../CSS/token.css"
 import { createNewToken , createAssociatedTokenAccount, mintToken } from '../lib/createUtils'
 import {TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import TokenSteps from './TokenSteps';
+import { getAccountExplorerURL  } from '../lib/utils';
 
 
 function TokenCreator(props) {
@@ -17,6 +18,7 @@ function TokenCreator(props) {
   const [tokenAccountAddress , setTokenAccountAddress ] = useState()
   const [mintAuthorityAddress , setMintAuthority ] = useState()
   const [tokenSupply , settokenSupply ] = useState()
+  const [ explorer , setExplorer ] = useState()
 
 
   const networks = {
@@ -30,9 +32,8 @@ function TokenCreator(props) {
 
   const getConnection = () => connection;
 
-  const  dash = () => {
-    let path = `dashboard`; 
-    history.push(path);
+  const  explorerURL = () => {
+    window.open(explorer)
   }
 
 async function createToken() { 
@@ -53,7 +54,8 @@ async function createToken() {
       setTokenAddress(data.publicKey.toString())
 
 
-      let mintAddr = data.publicKey.toString()
+      let mintAddr = data.publicKey.toString();
+      setExplorer(getAccountExplorerURL(mintAddr.toString()))
       let newObj = {
           tokenSymbol : symbol,
           mintAddress : mintAddr,
@@ -108,6 +110,8 @@ const getOnClick = (step) => {
       return ()=>createToken();
     case 2 :
       return ()=>createTokenAcc();
+    case 3 :
+      return ()=>explorerURL();
     }
 }
 

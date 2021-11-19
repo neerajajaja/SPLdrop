@@ -9,20 +9,20 @@ import {
 
 import Wallet from "@project-serum/sol-wallet-adapter";
 
-type DisplayEncoding = "utf8" | "hex";
-type PhantomEvent = "disconnect" | "connect";
-type PhantomRequestMethod =
+export type DisplayEncoding = "utf8" | "hex";
+export type PhantomEvent = "disconnect" | "connect";
+export type PhantomRequestMethod =
   | "connect"
   | "disconnect"
   | "signTransaction"
   | "signAllTransactions"
   | "signMessage";
 
-interface ConnectOpts {
+export interface ConnectOpts {
   onlyIfTrusted: boolean;
 }
 
-interface PhantomProvider {
+export interface PhantomProvider {
   publicKey: PublicKey | null;
   isConnected: boolean | null;
   autoApprove: boolean | null;
@@ -83,7 +83,7 @@ const NETWORK = clusterApiUrl("devnet");
     return connection.confirmTransaction(txid, "singleGossip");
   };
 
-  const createTransferTransaction = async (
+  export const createTransferTransaction = async (
     instructions: TransactionInstruction[], 
     connection: Connection,
     wallet: Wallet) => {
@@ -162,7 +162,7 @@ const NETWORK = clusterApiUrl("devnet");
       }catch (error) {
         console.log(error);
         //@ts-expect-error
-        csvResults.push([csvInfo[i][0], csvInfo[i][1].replace(/(\r\n|\n|\r)/gm, ""), "Failed", " "]);
+        csvResults.push([csvInfo[i][0], csvInfo[i][1].replace(/(\r\n|\n|\r)/gm, ""), "Failed", "https://explorer.solana.com/tx/"+txId+"?cluster=devnet"]);
       }
         
 

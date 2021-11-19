@@ -11,7 +11,7 @@ import {
   TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
 
-import { UtilizeWallet, sendTxUsingExternalSignature, sendMultipleTxUsingExternalSignature } from "../lib/Transaction";
+import { UtilizeWallet, sendTxUsingExternalSignature, createTransferTransaction, DisplayEncoding, PhantomEvent, PhantomRequestMethod, ConnectOpts, PhantomProvider } from "../lib/Transaction";
 
 import { PublicKey, Connection, clusterApiUrl } from "@solana/web3.js";
 
@@ -41,6 +41,9 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
   function AirdropPage(props) {
     const [csvFile, setCsvFile] = useState();
     const [csvArray, setCsvArray] = useState([]);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [currentTransaction, setCurrentTransaction] = useState(0);
+    const [totalTransactions, setTotalTransactions] = useState(0);
   
     async function findAssociatedTokenAddress(walletAddress, tokenMintAddress) {
       return (
@@ -54,10 +57,85 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         )
       )[0];
     }
+
+    const sendMultipleTxUsingExternalSignature = async (
+      csvInfo,
+      instructions,
+      connection,
+      feePayer,
+      signersExceptWallet,
+      wallet
+    ) => {
+  
+      const transactions=[];
+  
+      for (let i = 0; i < instructions.length; i++) {
+        const transaction=await createTransferTransaction(instructions[i],connection,wallet);
+        //@ts-expect-error
+        transactions.push(transaction);
+      }
+  
+      let signed = await wallet.signAllTransactions(transactions);
+      const transactionResult = await sendAllSignedTransactions(csvInfo, connection, signed);
+      return transactionResult;
+      //let txid = await connection.sendRawTransaction(signed.serialize());
+      //return connection.confirmTransaction(txid, "singleGossip");
+    };
+
+    async function sendAllSignedTransactions(csvInfo, connection, signedTransactions) {
+      var transactions = [];
+      var csvResults = [];
+  
+      //@ts-expect-error
+      csvResults.push(["Recipient Address", "Amount", "Transaction Status", "View Transaction"])
+  
+      for (let i=0; i<signedTransactions.length; i++) {
+        try{
+          let signedTransaction=signedTransactions[i];
+          console.log("signed transaction starting", signedTransaction);
+          const rawTransaction = signedTransaction.serialize();
+          setCurrentTransaction(i+1);
+          const txId = await connection.sendRawTransaction(rawTransaction, {
+              skipPreflight: true,
+              preflightCommitment: "confirmed",
+          });
+  
+          console.log("Sending transaction ID:", txId);
+  
+          //@ts-expect-error
+          transactions.push(txId);
+          const confirm = await connection.confirmTransaction(txId, "singleGossip");
+          console.log(confirm);
+          
+          if(!confirm.value.err){
+            //@ts-expect-error;
+          csvResults.push([csvInfo[i][0], csvInfo[i][1].replace(/(\r\n|\n|\r)/gm, ""), "Successful", "https://explorer.solana.com/tx/"+txId+"?cluster=devnet"]);
+          }
+          else{
+            //@ts-expect-error;
+          csvResults.push([csvInfo[i][0], csvInfo[i][1].replace(/(\r\n|\n|\r)/gm, ""), "Failed", "https://explorer.solana.com/tx/"+txId+"?cluster=devnet"]);
+  
+          }
+          
+        }catch (error) {
+          console.log(error);
+          //@ts-expect-error
+          csvResults.push([csvInfo[i][0], csvInfo[i][1].replace(/(\r\n|\n|\r)/gm, ""), "Failed", ""]);
+        }
+          
+  
+      }
+  
+      return csvResults;
+  }
   
     const provider = getProvider();
   
     async function airdropall(TokenMintAddress) {
+      setIsProcessing(true);
+      setCurrentTransaction(0);
+      setTotalTransactions(csvArray.length);
+
       try {
         const transactions = [];
 
@@ -115,6 +193,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         [],
         wallet
       );
+      setIsProcessing(false);
       alert("Token airdrop is over. You can now view the Airdrop summary.");
       
       console.log(transactioncsv);
@@ -134,6 +213,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
       pom.click();
 
        } catch (error) {
+        setIsProcessing(false);
          console.log(error);
          if(csvArray.length==0){
           alert("Error. Enter Token Mint Address and .csv file. Click on Upload before Airdropping. Refer to Docs if error persists.");
@@ -161,7 +241,11 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
 
 
     async function transferall(TokenMintAddress) {
+      setIsProcessing(true);
+      setCurrentTransaction(0);
+      setTotalTransactions(csvArray.length);
       try {
+        setTotalTransactions(csvArray.length);
         const transactions = [];
 
       const sourceAddress = await findAssociatedTokenAddress(
@@ -210,6 +294,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         [],
         wallet
       );
+      setIsProcessing(false);
       alert("Token transfer is over. You can now view the Transfer summary.");
       
       console.log(transactioncsv);
@@ -229,138 +314,15 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
       pom.click();
 
        } catch (error) {
+        setIsProcessing(false);
          console.log(error);
          if(csvArray.length==0){
           alert("Error. Enter Token Mint Address and .csv file. Click on Upload before Transfering. Refer to Docs if error persists.");
          };
-       }
-      
-      
-    }
-
-    async function airdrop(TokenMintAddress) {
-      try {
-        const transactions = [];
-
-      const sourceAddress = await findAssociatedTokenAddress(
-        new PublicKey(provider.publicKey.toString()),
-        new PublicKey(TokenMintAddress)
-      );
-
-      const sourcePubkey = new PublicKey(sourceAddress.toString());
-      const tokenMintPublicKey = new PublicKey(TokenMintAddress);
-      const connection = getConnection();
-      const wallet = await UtilizeWallet();
-
-      for (let i = 0; i < csvArray.length; i++) {
-        console.log(csvArray[i].recipient);
-        const ownerPublicKey = new PublicKey(csvArray[i].recipient);
-        const associatedTokenAccountPublicKey = await findAssociatedTokenAccountPublicKey(
-          ownerPublicKey,
-          tokenMintPublicKey
-        );
-
-        const ix = createIx(
-          //@ts-expect-error   
-          wallet.publicKey,
-          associatedTokenAccountPublicKey,
-          ownerPublicKey,
-          tokenMintPublicKey
-        );
-
-        const destinationPubkey = new PublicKey(associatedTokenAccountPublicKey.toString());
-
-        const transferIx = Token.createTransferInstruction(
-          TOKEN_PROGRAM_ID,
-          sourcePubkey,
-          destinationPubkey,
-          //@ts-expect-error
-          wallet.publicKey,
-          [],
-          csvArray[i].amount
-        );
-
-        transactions.push(ix);
-        transactions.push(transferIx);
-        
-      }
-      console.log(csvArray);
-      await sendTxUsingExternalSignature(
-        transactions,
-        connection,
-        null,
-        //@ts-expect-error
-        [],
-        wallet
-      );
-
-      alert("Congratulations your token has been successfully airdropped!");
-            
-      
-       } catch (error) {
-        console.log(error);
-        if(csvArray.length==0){
-         alert("Error. Enter Token Mint Address and .csv file. Click on Upload before Airdropping.");
-        };
-      }
+       }     
       
     }
 
-    async function transfer(TokenMintAddress) {
-      try {
-        const transactions = [];
-
-      const sourceAddress = await findAssociatedTokenAddress(
-        new PublicKey(provider.publicKey.toString()),
-        new PublicKey(TokenMintAddress)
-      );
-
-      const sourcePubkey = new PublicKey(sourceAddress.toString());
-      const tokenMintPublicKey = new PublicKey(TokenMintAddress);
-      const connection = getConnection();
-      const wallet = await UtilizeWallet();
-
-      for (let i = 0; i < csvArray.length; i++) {
-        console.log(csvArray[i].recipient);
-        const ownerPublicKey = new PublicKey(csvArray[i].recipient);
-        const associatedTokenAccountPublicKey = await findAssociatedTokenAccountPublicKey(
-          ownerPublicKey,
-          tokenMintPublicKey
-        );
-
-        const destinationPubkey = new PublicKey(associatedTokenAccountPublicKey.toString());
-
-        const transferIx = Token.createTransferInstruction(
-          TOKEN_PROGRAM_ID,
-          sourcePubkey,
-          destinationPubkey,
-          //@ts-expect-error
-          wallet.publicKey,
-          [],
-          csvArray[i].amount
-        );
-
-        transactions.push(transferIx);
-        
-      }
-      console.log(csvArray);
-      await sendTxUsingExternalSignature(
-        transactions,
-        connection,
-        null,
-        //@ts-expect-error
-        [],
-        wallet
-      );
-
-      alert("Congratulations your token has been successfully transferred!");
-            
-      
-       } catch (error) {
-         console.log(error);
-         alert("Error. Click Upload before Transfer");
-       }            
-    }
 
     const processCSV = (str, delim=',') => {
         const firstrow = str.slice(0,str.indexOf('\n'));
@@ -423,7 +385,7 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
 
         &nbsp;
         &nbsp;
-        <br/> 
+        
         <button
            className = "p-2 mb-30 rounded-md shadow-lg bg-indigo-500 mt-5 hover:shadow-xl duration-300 hover:bg-indigo-600 text-white"
       
@@ -438,20 +400,23 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
         </button>
         &nbsp;
         &nbsp;
-        <br/> 
+        
         <button
            className = "p-2 mb-30 rounded-md shadow-lg bg-indigo-500 mt-5 hover:shadow-xl duration-300 hover:bg-indigo-600 text-white"
       
           onClick={(e) => {
             transferall(
               document.getElementById("TokenMintAddress").value
-            );
+            );        
           }
           }
         >
           Transfer
         </button>
         <br/>
+        {isProcessing && <div>
+        <br/><p className="text-black font-sans text-base">Processing {currentTransaction} of {totalTransactions} transactions.</p>
+      </div>}
       </>
     );
   }
