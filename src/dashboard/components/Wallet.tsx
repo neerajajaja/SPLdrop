@@ -113,6 +113,15 @@ export default function Connect(props : any) {
           </button>
         </span>
 
+        <span className="hidden sm:block">
+          <button
+           
+            className="inline-flex items-center px-4 py-2 duration-200 hover:text-black rounded-md shadow-sm hover:shadow-md text-sm font-medium text-gray-700 bg-white " onClick={ ()=>window.open("https://github.com/neerajajaja/SPLdrop")}
+          >
+             Code
+          </button>
+        </span>
+
         <span className="sm:ml-3">
         {provider && provider.publicKey ? (
            <button  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onClick={() => provider.disconnect()}> 
